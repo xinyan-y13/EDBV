@@ -1,6 +1,17 @@
 function [ masked_image, center ] = detectCard( file_path )
 % DETECTCARD Detects card in given image and mask image to just show
 % detected card
+% 
+% INPUT PARAMS:
+% 
+% file_path - Path to image file
+%
+% OUTPUT PARAMS:
+% 
+% masked_image - graylevel image with applied mask, just the card is
+%                visible
+% center - center point of detected card for later 3D object insertion
+%
 % AUTHOR Bernd Artmueller (1127846)
 
 I = imread(file_path);
