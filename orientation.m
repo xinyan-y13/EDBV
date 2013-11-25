@@ -1,4 +1,18 @@
 function final_keypoints = orientation(keypoints, octave, scale, sigma)
+% ORIENTATION Computes the "dominant" orientation for each keypoint
+% 
+% INPUT PARAMS:
+% 
+% keypoints - keypoints found in image
+% octave    - current image octave
+% scale     - scale of current octave
+% sigma     - sigma value used for gaussian filter of current octave
+%
+% OUTPUT PARAMS:
+% 
+% final_keypoints - keypoints with "dominant" orientation
+%
+% AUTHOR Bernd Artmueller (1127846)
 
 BINS = 36;
 
@@ -28,7 +42,7 @@ for sl = 1:s_num
     angles(:,:,sl)     = atan(dy ./ dx);
 end
 
-% round off the cooridnates and 
+% round off the coordinates and 
 keypoints_x_axis = oframes(1,:);
 keypoints_y_axis = oframes(2,:) ;
 keypoints_scale = oframes(3,:);
