@@ -25,8 +25,8 @@ histogram = zeros(1, BINS);
 key_num = size(keypoints, 2);
 
 % create empty matrix for magnitudes and angles
-magnitudes = zeros(size(octave));
-angles     = zeros(size(octave));
+magnitudes = ones(size(octave));
+angles     = ones(size(octave));
 
 % iterate all intervalls of given octave and compute magnitude and angles
 for sl = 1:s_num
@@ -38,14 +38,19 @@ for sl = 1:s_num
     dx = imfilter(image, dx_filter);
     dy = imfilter(image, dy_filter);
     
-    magnitudes(:,:,sl) = sqrt( dx.^2 + dy.^2);
-    angles(:,:,sl)     = atan(dy ./ dx);
+    dx = double(dx);
+    dy = double(dy);
+    
+    dx = max(dx, 1);
+    
+    magnitudes(:,:,sl) = sqrt( dx.^2 + dy.^2 );
+    angles(:,:,sl)     = atan2( dy, dx );
 end
 
 % round off the coordinates and 
-keypoints_x_axis = oframes(1,:);
-keypoints_y_axis = oframes(2,:) ;
-keypoints_scale = oframes(3,:);
+keypoints_x_axis = keypoints(1,:);
+keypoints_y_axis = keypoints(2,:) ;
+keypoints_scale = keypoints(3,:);
 
 %x_round = floor(oframes(1,:) + 0.5);
 %y_round = floor(oframes(2,:) + 0.5);
@@ -58,14 +63,14 @@ for keypoint=1:key_num
     keypoint_y = keypoints_y_axis(keypoint);
     keypoint_s = keypoints_scale(keypoint);
     
-    sigma_gauss_window = window_factor * sigma * 2^(double (keypoint_s / scale)) ;
-    window_radius = floor(3.0* sigma_gauss_window);
+    sigma_gauss_window = window_factor * (keypoint_s / scale);
+    window_radius = floor(sigma_gauss_window);
     
     % iterate over all pixels in window
     for xs = keypoint_x - window_radius : keypoint_x + window_radius
         for ys = keypoint_y - window_radius : keypoint_y + window_radius
-            dx = (xs - keypoint_x);
-            dy = (ys - keypoint_y);
+            dx = abs(xs - keypoint_x);
+            dy = abs(ys - keypoint_y);
             
             % only continue with points which are inside the window
             if dx^2 + dy^2 <= window_radius^2
@@ -73,9 +78,9 @@ for keypoint=1:key_num
                gaussian_falloff = exp(-(dx^2 + dy^2)/(2 * sigma_gauss_window^2));
                
                % calculate the correct bin
-               bin = round( NBINS *  angles(ys, xs, keypoint_s + 1)/(2*pi) + 0.5);
+               bin = round( BINS *  angles(ys, xs, keypoint_s)/(2*pi) + 0.5);
 
-               histogram(bin) = histo(bin) + gaussian_falloff * magnitudes(ys, xs, keypoint_s + 1);
+               histogram(bin) = double(histogram(bin) + gaussian_falloff * magnitudes(ys, xs, keypoint_s));
             end
             
         end
@@ -85,13 +90,18 @@ for keypoint=1:key_num
     theta_max = max(histogram);
     theta_bin_peaks_indices = find(histogram > 0.8 * theta_max);
     theta_bin_peaks_count = size(theta_bin_peaks_indices, 2);
-    
+
     % iterate all bins with peaks
     for i = 1 : theta_bin_peaks_count
-        % get angle for current keypoint
-        theta = theta_bin_peaks_indices(i);
+        % angle of dominant magnitude
+        dominant_angle     = ( (2 * pi) * theta_bin_peaks_indices(i) ) / BINS;
+        % length of dominant magnitude
+        dominant_magnitude = double(histogram(theta_bin_peaks_indices(i)));
         
         % add keypoint with "dominant" orientation
-        final_keypoints = [final_keypoints, [keypoint_x; keypoint_y; keypoint_s; theta]];        
-    end   
+        final_keypoints = [final_keypoints, [keypoint_x; keypoint_y; keypoint_s; dominant_angle * 180/pi; dominant_magnitude]];        
+    end  
+ 
+    % reset histogram
+    histogram = zeros(1, BINS);
 end

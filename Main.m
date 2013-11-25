@@ -1,6 +1,6 @@
 
 % Masking image to remove unnecessary 
-[maskedI center] = detectCard('./test/test4.jpg');
+[maskedI center] = detectCard('./test/test8.jpg');
 
 % Creating Difference-of-Gaussian array
 octaves = 4;
@@ -33,23 +33,30 @@ end
 
 %Looking for extremes in each octave
 oct1ext = localExt(octave1,1);
-oct2ext = localExt(octave2,1);
-oct3ext = localExt(octave3,1);
-oct4ext = localExt(octave4,1);
+%oct2ext = localExt(octave2,1);
+%oct3ext = localExt(octave3,1);
+%oct4ext = localExt(octave4,1);
 
 
 %Localizing extrema with subpixel precision
-oct1extSp = subpixel(oct1ext,octave1,0.5,10);
-oct2extSp = subpixel(oct2ext,octave2,0.5,10);
-oct3extSp = subpixel(oct3ext,octave3,0.5,10);
-oct4extSp = subpixel(oct4ext,octave4,0.5,10);
+%oct1extSp = subpixel(oct1ext,octave1,0.5,10);
+%oct2extSp = subpixel(oct2ext,octave2,0.5,10);
+%oct3extSp = subpixel(oct3ext,octave3,0.5,10);
+%oct4extSp = subpixel(oct4ext,octave4,0.5,10);
 
 
 %Calculating orientation
-frames1 = orientation(oct1extSp, octave1);
-frames2 = orientation(oct2extSp, octave2);
-frames3 = orientation(oct3extSp, octave3);
-frames4 = orientation(oct4extSp, octave4);
+frames1 = orientation(oct1ext, octave1, 1, 1.6);
+
+imshow(maskedI)
+hold on; 
+plot(oct1ext(1,:),oct1ext(2,:),'b.','MarkerSize',10) 
+hold on;
+quiver( frames1(1,:), frames1(2,:), frames1(4,:), frames1(5,:));
+
+%frames2 = orientation(oct2extSp, octave2);
+%frames3 = orientation(oct3extSp, octave3);
+%frames4 = orientation(oct4extSp, octave4);
 
 
 

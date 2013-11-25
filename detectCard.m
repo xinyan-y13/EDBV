@@ -10,7 +10,7 @@ function [ masked_image, center ] = detectCard( file_path )
 % 
 % masked_image - graylevel image with applied mask, just the card is
 %                visible
-% center - center point of detected card for later 3D object insertion
+% center - center point (x y) of detected card for later 3D object insertion
 %
 % AUTHOR Bernd Artmueller (1127846)
 
