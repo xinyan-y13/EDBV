@@ -45,16 +45,20 @@ for l=1:1:l
         
         % move the coordination of one subpixel till it's close enough to
         % the actual max or min.
-        %x = x + dx ;
-        %y = y + dy ;
+        x = x + dx ;
+        y = y + dy ;
         
+        if x < 2 || x > B-1 || y < 2 || y > L-1 || o < 2 || o > D-1
+            break;
+        end
         
         %gradient
+        
         
         Dx = (octav(y,x+1,o)-octav(y,x-1,o))/2;
         Dy = (octav(y+1,x,o)-octav(y-1,x,o))/2;
         Do = (octav(y,x,o+1)+octav(y,x,o-1))/2;
-        t(1) = Dx; t(2) = Dy; t(3) = Do;
+        t(1) = -Dx; t(2) = -Dy; t(3) = -Do;
         
         
         %Hessian Matrix
@@ -79,31 +83,61 @@ for l=1:1:l
         H(1,1) = dxx; H(1,2) = dxy; H(1,3) = dxs;
         H(2,1) = dxy; H(2,2) = dyy; H(2,3) = dys;
         H(3,1) = dxs; H(3,2) = dys; H(3,3) = dss;
-        H = inv(H);
+        %H = inv(H);
         
         %interpolate the range of translation
-        p = (-1) * H * t;
+        p = (t/H);
         
         
         %if the translation is smaller than 0.5, convergence has been
         %reached and don't have to care about the rest
-        if p(1) < 0.5 && p(2) < 0.5 && p(3)<0.5
-            
-            break;
-        end
+        % if p(1) < 0.5 && p(2) < 0.5 && p(3)<0.5
+        
+        %     break;
+        % end
         
         %else
         
-        x = x + p(1);
-        y = y + p(2);
-        o = o + p(3);
+        % x = x + p(1);
+        % y = y + p(2);
+        % o = o + p(3);
         
-        if x < 1 || x > B-1 || x < 1 || x > L-1 || x < 1 || x > D-1
-            break;
+        % if x < 2 || x > B-1 || y < 2 || y > L-1 || o < 2 || o > D-1
+        %     break;
+        % end
+        
+        
+        if (p(1) >  0.5 && x < L-2 )
+            if (p(1) < -0.5 && x > 1)
+                dx=0;
+            else
+                dx=1;
+            end
+        else
+            if (p(1) < -0.5 && x > 1)
+                dx=-1;
+            else
+                dx=0;
+            end
         end
         
+        if (p(2) >  0.5 && y < L-2 )
+            if (p(2) < -0.5 && y > 1)
+                dy=0;
+            else
+                dy=1;
+            end
+        else
+            if (p(2) < -0.5 && y > 1)
+                dy=-1;
+            else
+                dy=0;
+            end
+        end
         
+        if( dx == 0 && dy == 0 ) break ; end
     end
+    
     
     
     
@@ -135,7 +169,9 @@ for l=1:1:l
     % r is just an interval to determine whether one specific point is
     % gonna be saved or not. In Lowe's paper, it's normally 10.
     
-    
+    rx = x + p(1);
+    ry = y + p(2);
+    ro = o + p(3);
     
     
     % in this case, the coordinates of the point can be saved
@@ -149,9 +185,9 @@ for l=1:1:l
             && ro <= D-1
         
         
-        result(1,iter) = rx;
-        result(2,iter) = ry;
-        result(3,iter) = ro;
+        result(1,iter) = x;
+        result(2,iter) = y;
+        result(3,iter) = o;
         iter = iter+1;
         
     end
