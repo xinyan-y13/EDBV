@@ -46,13 +46,13 @@ oct1ext = localExt(octave1,1);
 
 
 %Calculating orientation
-frames1 = orientation(oct1ext, octave1, 1, 1.6);
+%frames1 = orientation(oct1ext, octave1, 1, 1.6);
 
-imshow(maskedI)
-hold on; 
-plot(oct1ext(1,:),oct1ext(2,:),'b.','MarkerSize',10) 
-hold on;
-quiver( frames1(1,:), frames1(2,:), frames1(4,:), frames1(5,:));
+%imshow(maskedI)
+%hold on; 
+%plot(oct1ext(1,:),oct1ext(2,:),'b.','MarkerSize',10) 
+%hold on;
+%quiver( frames1(1,:), frames1(2,:), frames1(4,:), frames1(5,:));
 
 %frames2 = orientation(oct2extSp, octave2);
 %frames3 = orientation(oct3extSp, octave3);
@@ -61,8 +61,19 @@ quiver( frames1(1,:), frames1(2,:), frames1(4,:), frames1(5,:));
 
 
 
+fImage = imread('./test/test8.jpg');
 
+% rotate about the second dimension.
 
+theta = 0.1;
+T2 = [cos(theta)  0      -sin(theta)   0
+    0             1              0     0
+    sin(theta)    0       cos(theta)   0
+    0             0              0     1];
+
+T = T2;
+
+drawFinalImageWithCube(fImage, center, T);
 
 
 
