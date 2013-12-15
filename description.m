@@ -1,120 +1,106 @@
-function [result] = description(octave, keys,sigma,d)
+function [result] = description(octave,keys)
 
-%octave:original octave
-%keys: the location, magnitude and orientation of all key points.
-%sigma:
-% d = descriptor width, = 4 according to lowe's paper
 
-[H,W,S] = size(octave);
-descriptor = [];
-magnitude = zeros(H,W,S);
 
-for s = 1:1: S
-    interval = octave(:,:,s);
-    dx = [-0.5,0,0.5];
-    dy = dx;
-    x_grad = imfilter(interval, dx);
-    y_grad = imfilter(interval, dy);
-    magnitude(:,:,s) = sqrt(x_grad.^2 + y_grad.^2); % calculate the magnitude
-    
-    %!!!
-    angles(:,:,s) = mod(atan(y_grad ./ (eps + x_grad)) + 2*pi, 2*pi);
-    
-    
+[H, W, S] = size(octave); % H is the height of image, W is the width of image; num_level is the number of scale level of the octave
+result = [];
+magnitudes = keys(5,:);
+angles = zeros(H, W, S);
+
+
+
+for s = 1: 1:S
+    img = octave(:,:,s);
+    filter = imfilter(img, [-0.5 0 0.5]);
+    angles(:,:,s) = mod(atan(double(filter) ./ double(eps + filter)) + 2*pi, 2*pi);
 end
 
 
-%Now calculate the weight
-
-as = keys(1,:);
-bs = keys(2,:);
-ss = keys(3,:);
+a = keys(1,:);
+b = keys(2,:);
 
 
-for k = 1: 1: size(keys:2)
+xr = floor(keys(1,:) + 0.5);
+yr = floor(keys(2,:) + 0.5);
+sc =  floor(keys(3,:) + 0.5);
+
+
+% for every key point
+for p = 1: size(keys, 2)
+
+    s = sc(p);
+    xp= xr(p);
+    yp= yr(p);
     
-    a = floor(as(k));
-    b = floor(bs(k));
-    s = floor(ss(k));
+    orien = keys(4,p);
+    sinus = sin(orien) ;
+    cosinus = cos(orien) ;
     
-    %mag = keys(5,k);
-    orien = keys(4,k);
+    sigma = (1.6*2^(1/3)) * 2^(double (s / 3)) ;
+    width = 3 * sigma;
+    radius = floor( sqrt(2) * width * 5 * 0.5 + 0.5);
     
-    sinus = sin(orien);
-    cosinus = cos(orien);
+    descriptor = zeros(4, 4, 8);
     
-    width = 3 * (sigma * 2^(s / 3)); % the width of one field within histogramm, sigma value still to be determined
-    radius = floor(width * sqrt(2) * 5.0 * 0.5 + 0.5); % radius of the window
-    
-    descriptor = zeros(4,4,8);
-    
-    %Avoid the negative values causing from -radius, use 1-a and 1-b
-    for i = max(-radius, 1-a):min(radius, N-2-a)
-        for j = max(-radius,1-b):min(radius, M-2-b)
+  
+    for i = max(-radius, 1-xp): min(radius, W - xp)
+        for j = max(-radius, 1-yp) : min(radius, H -yp)
             
             
-            % According to Lowe, formula: weight = m(a+x,b+y) * exp
-            % where a and b are coordinates of the keypoint in the gauss
-            % pyramid
-            
-            mag = abs(magnitude(b+j,a+i,s+1));
-            ang = abs(angles(b+j,a+i,s+1));
-            ang = mod(orien-ang, 2*pi); % recalculate the orientation
+            mag = magnitudes(p);
+            ang = angles(yp + j, xp + i, s) ;  % the gradient ang at current point(yp + j, xp + i)
+            ang = mod(orien - ang, 2*pi);      % adjust the ang with the major orientation of the keypoint and mod it with 2*pi
             
             
+            distance_x = double(xp + i - a(p));  % a(p),b(p): coordinates of key point in the gauss pyramid 
+            distance_y = double(yp + j - b(p));  % distance_x(y): rotated x and y
             
-            % rotate the keys, x', y'
-            rx = ((cosinus * (a+i) + sinus * (b+j))/width) +(d/2);
-            ry = ((cosinus*(b+ j) - sinus *(a +i))/width) + (d/2);
-            rs = 8*ang/(2*pi);
-            w_exp = exp(-(rx*rx + ry*ry)/ (d * d * 0.5)); % gaussian weight parameter£¬ d/2 = sigma
+            nx = ( cosinus * distance_x + sinus * distance_y) / width ; 
+            ny = ( cosinus * distance_y -sinus * distance_x) / width ; 
+            nt = 8 * ang / (2* pi) ;
+
+            gaus_exp =  exp(-(nx*nx + ny*ny)/8) ;
             
-            
-            
-            %x",y"
-            binx = floor(rx - 0.5);  % binx and biny are the new coordinates after the rotation
-            biny = floor(ry -0.5);
-            bins = floor(rs);
-            rbinx = rx - (binx + 0.5);
-            rbiny = ry - (biny + 0.5);
-            rbins = rs - bins;
-            
-            
-            % now double interpolation
-            for bx = 0:1:1
-                for by = 0:1:1
-                    for bs = 0:1:1
-                        if binx + bx >= -(d/2)&& binx + bx < d/2 && ...
-                                biny + by >= -(d/2) && biny + by < (d/2)
-                            
-                            bin_weight = w_exp * mag * (1 - bx - rbinx)* abs(1-by-rbiny) * abs(1-bs-rbins);
-                            
-                            descriptor(binx+bx+d/2+1, biny + by + d/2 +1,mod((bins + bs),8)+1) = ...
-                                descriptor(binx+bx+d/2+1, biny + by + d/2 +1,mod((bins + bs),8)+1) + bin_weight;
-                            
+            binx = floor( nx - 0.5 ) ;
+            biny = floor( ny - 0.5 ) ;
+            bint = floor( nt );
+            rbinx = nx - (binx+0.5) ;
+            rbiny = ny - (biny+0.5) ;
+            rbint = nt - bint ;
+             
+            for rotate_x = 0:1
+               for rotate_y = 0:1 
+                   for rotate_s = 0:1 
+                       
+                        if( binx+rotate_x >= -2 && binx+rotate_x <   2 && biny+rotate_y >= -2 && biny+rotate_y <   2 &&  isnan(bint) == 0) 
+                              
+                              weight = gaus_exp * mag * abs(1 - rotate_x - rbinx)* abs(1 - rotate_y - rbiny)* abs(1 - rotate_s - rbint) ;
+   
+                              descriptor(binx+rotate_x + 3, biny+rotate_y + 3, mod((bint+rotate_s),8)+1) = descriptor(binx+rotate_x + 3, biny+rotate_y + 3, mod((bint+rotate_s),8)+1 ) +  weight ;
                         end
-                    end
-                end
-                
+                   end
+               end
             end
+
         end
-        
-        
-        
+            
     end
-    
-    
-    % normalize
-    descriptor = reshape(descriptor, 1, d*d*8);
+    descriptor = reshape(descriptor, 1, 4 * 4 * 8);
     descriptor = descriptor ./ norm(descriptor);
-    % cut off the great magnitudes
+            
+    %Truncate at 0.2
     index = find(descriptor > 0.2);
     descriptor(index) = 0.2;
     descriptor = descriptor ./ norm(descriptor);
     
-    result = descriptor;
-    
-    
-    
-    
+    result = [result, descriptor'];
 end
+
+  
+
+
+
+
+
+
+
