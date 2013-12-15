@@ -1,6 +1,6 @@
 
 % Masking image to remove unnecessary 
-[maskedI center] = detectCard('./test/test8.jpg');
+[maskedI center] = detectCard('./test/katze1.jpg');
 
 % Creating Difference-of-Gaussian array
 octaves = 4;
@@ -32,9 +32,9 @@ end
 
 
 %Looking for extremes in each octave
-oct1ext = localExt(octave1,1);
-oct2ext = localExt(octave2,1);
-oct3ext = localExt(octave3,1);
+oct1ext = localExt(octave1,7);
+oct2ext = localExt(octave2,5);
+oct3ext = localExt(octave3,3);
 oct4ext = localExt(octave4,1);
 
 %Localizing extrema with subpixel precision
@@ -52,10 +52,10 @@ oct4extSp = subpixel(oct4ext,octave4,0.5,10);
 
 % NOTE: This step is only necessary for plotting the found interest points
 % on the correct position of the image
-oct1InteresPoints = calculateRelativePixelPosition(oct1extSp, 1);
-oct2InteresPoints = calculateRelativePixelPosition(oct2extSp, 2);
-oct3InteresPoints = calculateRelativePixelPosition(oct3extSp, 3);
-oct4InteresPoints = calculateRelativePixelPosition(oct4extSp, 4);
+oct1InteresPoints = calculateRelativePixelPosition(oct1ext, 1);
+oct2InteresPoints = calculateRelativePixelPosition(oct2ext, 2);
+oct3InteresPoints = calculateRelativePixelPosition(oct3ext, 3);
+oct4InteresPoints = calculateRelativePixelPosition(oct4ext, 4);
 
 %Calculating orientation
 %frames1 = orientation(oct1ext, octave1, 1, 1.6);
