@@ -42,7 +42,7 @@ for i = 1:octaves,
     sigma = startingSigma;
     for j = 1:intervals+1,
         sigma = startingSigma * k^(j-1);
-        gaussFilter = fspecial('gaussian', 40, sigma);
+        gaussFilter = fspecial('gaussian', ceil((2^(1/j)) * sigma), sigma);
         gaussImg = imfilter(grImg, gaussFilter);
         gaussImgArray(i,j) = {gaussImg};
     end
@@ -55,15 +55,15 @@ end
 
 
 % Creating DoG array
-for i = 1:octaves,
-    for j = 1:intervals,
+for i = 1:octaves
+    for j = 1:intervals
         dogArray(i,j) = {cell2mat(gaussImgArray(i,j)) - cell2mat(gaussImgArray(i,j+1))};
     end
 end
 
 % figure
-% for j = 1:intervals,
-%     subplot(2,3,j), subimage(cell2mat(dogArray(1,j)))
+% for j = 1:intervals
+%     subplot(2,3,j), imshow(cell2mat(dogArray(1,j)), [])
 % end
 
 

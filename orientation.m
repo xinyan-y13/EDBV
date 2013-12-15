@@ -21,9 +21,6 @@ window_factor = 1.5;
 histogram = zeros(1, BINS);
 [octave_height, octave_width, s_num] = size(octave); % M is the height of image, N is the width of image; num_level is the number of scale level of the octave
 
-% amount of keypoints
-key_num = size(keypoints, 2);
-
 % create empty matrix for magnitudes and angles
 magnitudes = ones(size(octave));
 angles     = ones(size(octave));
@@ -47,14 +44,13 @@ for sl = 1:s_num
     angles(:,:,sl)     = atan2( dy, dx );
 end
 
-% round off the coordinates and 
+% retrieve keypoint informations for easier access
 keypoints_x_axis = keypoints(1,:);
 keypoints_y_axis = keypoints(2,:) ;
 keypoints_scale = keypoints(3,:);
 
-%x_round = floor(oframes(1,:) + 0.5);
-%y_round = floor(oframes(2,:) + 0.5);
-%scales = floor(oframes(3,:) + 0.5) - smin;
+% amount of keypoints
+key_num = size(keypoints, 2);
 
 % iterate each keypoint and apply window
 for keypoint=1:key_num
@@ -63,7 +59,7 @@ for keypoint=1:key_num
     keypoint_y = keypoints_y_axis(keypoint);
     keypoint_s = keypoints_scale(keypoint);
     
-    sigma_gauss_window = window_factor * (keypoint_s / scale);
+    sigma_gauss_window = window_factor * scale;
     window_radius = floor(sigma_gauss_window);
     
     % iterate over all pixels in window
@@ -82,7 +78,6 @@ for keypoint=1:key_num
 
                histogram(bin) = double(histogram(bin) + gaussian_falloff * magnitudes(ys, xs, keypoint_s));
             end
-            
         end
     end
     
@@ -95,11 +90,12 @@ for keypoint=1:key_num
     for i = 1 : theta_bin_peaks_count
         % angle of dominant magnitude
         dominant_angle     = ( (2 * pi) * theta_bin_peaks_indices(i) ) / BINS;
+        
         % length of dominant magnitude
         dominant_magnitude = double(histogram(theta_bin_peaks_indices(i)));
         
         % add keypoint with "dominant" orientation
-        final_keypoints = [final_keypoints, [keypoint_x; keypoint_y; keypoint_s; dominant_angle * 180/pi; dominant_magnitude]];        
+        final_keypoints = [final_keypoints, [keypoint_x; keypoint_y; keypoint_s; (dominant_angle * 180) / pi; dominant_magnitude]];        
     end  
  
     % reset histogram
