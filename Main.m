@@ -1,7 +1,8 @@
 
 % Masking image to remove unnecessary 
-[maskedI center] = detectCard('./test/test4gc.jpg');
+[maskedI center] = detectCard('./test/katze1.jpg');
 
+%maskedI = double(rgb2gray(imread('./test/gc.jpg')));
 % Creating Difference-of-Gaussian array
 octaves = 4;
 intervals = 5;
@@ -30,10 +31,11 @@ end
 
 %Calculating orientation
 oriArray = cell(1,octaves);
+ips = zeros(5,0);
 for i = 1:octaves
-    extrema = localExt(cell2mat(ocataveArray(i)),thresholds(i));
-    extremaSp = subpixel(extrema, cell2mat(ocataveArray(i)), 0.5, 10);
-    oriArray(1,i) = {orientation(cell2mat(extArray(i)), cell2mat(ocataveArray(i)), 1.6)};
+   ori = orientation(cell2mat(extArray(i)), cell2mat(ocataveArray(i)), 1.6);
+   oriArray(1,i) = {ori};
+   ips = cat(2,ips,ori);
 end
 
 
