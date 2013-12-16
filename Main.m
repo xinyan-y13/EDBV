@@ -1,53 +1,41 @@
 
 % Masking image to remove unnecessary 
-[maskedI center] = detectCard('./test/katze2.jpg');
+[maskedI center] = detectCard('./test/test4gc.jpg');
 
 % Creating Difference-of-Gaussian array
 octaves = 4;
-intervals = 4;
+intervals = 5;
 
 dogArray = createDog(maskedI, octaves, intervals );
 
-
-% Transforming each octave to 3d matrix
-octave1 = cell2mat(dogArray(1,1));
-for i = 2:intervals
-     octave1(:,:,i) = cell2mat(dogArray(1,i));
+%Rearranging octaves for further processing
+ocataveArray = cell(1,octaves);
+for i = 1:octaves
+octave = cell2mat(dogArray(i,1));
+    for j = 2:intervals
+        octave(:,:,j) = cell2mat(dogArray(i,j));
+    end
+   ocataveArray(1,i) = {octave};
 end
 
-octave2 = cell2mat(dogArray(2,1));
-for i = 2:intervals,
-     octave2(:,:,i) = cell2mat(dogArray(2,i));
+%Looking for extremes in each octave and
+%localizing extrema with subpixel precision
+thresholds = [0.20 0.15 0.1 0.08];
+extArray = cell(1,octaves);
+ for i = 1:octaves
+    extrema = localExt(cell2mat(ocataveArray(i)),thresholds(i));
+    extremaSp = subpixel(extrema, cell2mat(ocataveArray(i)), 0.5, 10);
+    extArray(1,i) = {extremaSp};
 end
-
-octave3 = cell2mat(dogArray(3,1));
-for i = 2:intervals,
-     octave3(:,:,i) = cell2mat(dogArray(3,i));
-end
-
-octave4 = cell2mat(dogArray(4,1));
-for i = 2:intervals,
-     octave4(:,:,i) = cell2mat(dogArray(4,i));
-end
-
-
-%Looking for extremes in each octave
-oct1ext = localExt(octave1,0.20);
-oct2ext = localExt(octave2,0.15);
-oct3ext = localExt(octave3,0.1);
-oct4ext = localExt(octave4,0.08);
-
-%Localizing extrema with subpixel precision
-oct1extSp = subpixel(oct1ext,octave1,0.5,10);
-oct2extSp = subpixel(oct2ext,octave2,0.5,10);
-oct3extSp = subpixel(oct3ext,octave3,0.5,10);
-oct4extSp = subpixel(oct4ext,octave4,0.5,10);
 
 %Calculating orientation
-oct1extOrient = orientation(oct1extSp, octave1, 1.6);
-oct2extOrient = orientation(oct2extSp, octave2, 1.6);
-oct3extOrient = orientation(oct3extSp, octave3, 1.6);
-oct4extOrient = orientation(oct4extSp, octave4, 1.6);
+oriArray = cell(1,octaves);
+for i = 1:octaves
+    extrema = localExt(cell2mat(ocataveArray(i)),thresholds(i));
+    extremaSp = subpixel(extrema, cell2mat(ocataveArray(i)), 0.5, 10);
+    oriArray(1,i) = {orientation(cell2mat(extArray(i)), cell2mat(ocataveArray(i)), 1.6)};
+end
+
 
 % TODO Create unique interest point descriptor
 
@@ -55,10 +43,10 @@ oct4extOrient = orientation(oct4extSp, octave4, 1.6);
 
 % NOTE: This step is only necessary for plotting the found interest points
 % on the correct position of the image
-oct1InteresPoints = calculateRelativePixelPosition(oct1extSp, 1);
-oct2InteresPoints = calculateRelativePixelPosition(oct2extSp, 2);
-oct3InteresPoints = calculateRelativePixelPosition(oct3extSp, 3);
-oct4InteresPoints = calculateRelativePixelPosition(oct4extSp, 4);
+relIP = cell(1,octaves);
+for i=1:octaves
+    relIP(1,i) = {calculateRelativePixelPosition(cell2mat(extArray(i)), i)};
+end
 
 
 
@@ -71,13 +59,17 @@ oct4InteresPoints = calculateRelativePixelPosition(oct4extSp, 4);
 % yellow - IP's on cotave 4
 figure
 imshow(maskedI)
-hold on; 
+hold on;
+oct1InteresPoints = cell2mat(relIP(1));
 plot(oct1InteresPoints(1,:),oct1InteresPoints(2,:),'b.','MarkerSize',10) 
 hold on;
+oct2InteresPoints = cell2mat(relIP(2));
 plot(oct2InteresPoints(1,:),oct2InteresPoints(2,:),'r.','MarkerSize',10) 
 hold on;
+oct3InteresPoints = cell2mat(relIP(3));
 plot(oct3InteresPoints(1,:),oct3InteresPoints(2,:),'g.','MarkerSize',10) 
 hold on;
+oct4InteresPoints = cell2mat(relIP(4));
 plot(oct4InteresPoints(1,:),oct4InteresPoints(2,:),'y.','MarkerSize',10) 
 %hold on;
 %quiver( frames1(1,:), frames1(2,:), frames1(4,:), frames1(5,:));
