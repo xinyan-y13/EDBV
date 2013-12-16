@@ -57,7 +57,12 @@ end
 % Creating DoG array
 for i = 1:octaves
     for j = 1:intervals
-        dogArray(i,j) = {cell2mat(gaussImgArray(i,j)) - cell2mat(gaussImgArray(i,j+1))};
+        dog = cell2mat(gaussImgArray(i,j)) - cell2mat(gaussImgArray(i,j+1));
+
+        % normalize dog
+        dog = dog / max(dog(:));
+
+        dogArray(i,j) = {dog};
     end
 end
 

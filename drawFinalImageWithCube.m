@@ -1,4 +1,4 @@
-function [ output_args ] = drawFinalImageWithCube( img, position, transformation_matrix )
+function drawFinalImageWithCube( img, position, transformation_matrix )
 % DRAWFINALIMAGEWITHCUBE Displays the image with correct
 % rotated/translated cube on the card
 % 
@@ -32,6 +32,12 @@ fig1_position = get(fig1, 'Position');
 fig1_width    = fig1_position(3);
 fig1_height   = fig1_position(4);
 
+resize_factor = fig1_height / img_height;
+
+img_width = img_width * resize_factor;
+img_height = img_height * resize_factor;
+position = position * resize_factor;
+
 % calc left and bottom padding of figure
 fig1_leftpadding   = (fig1_width  - img_width)  / 2;
 fig1_bottompadding = (fig1_height - img_height) / 2;
@@ -61,7 +67,6 @@ F = 0;
 
 % apply transformation matrix to cube
 blob2 = tformarray(blob, tform, R, TDIMS_A, TDIMS_B, TSIZE_B, TMAP_B, F);
-
 
 % set position of cube (axis of cube)
 h3 = axes('Position',[patch_position_left patch_position_bottom 0.1 0.1]); 

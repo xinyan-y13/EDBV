@@ -1,6 +1,6 @@
 
 % Masking image to remove unnecessary 
-[maskedI center] = detectCard('./test/katze1.jpg');
+[maskedI center] = detectCard('./test/katze2.jpg');
 
 % Creating Difference-of-Gaussian array
 octaves = 4;
@@ -32,10 +32,10 @@ end
 
 
 %Looking for extremes in each octave
-oct1ext = localExt(octave1,7);
-oct2ext = localExt(octave2,5);
-oct3ext = localExt(octave3,3);
-oct4ext = localExt(octave4,1);
+oct1ext = localExt(octave1,0.20);
+oct2ext = localExt(octave2,0.15);
+oct3ext = localExt(octave3,0.1);
+oct4ext = localExt(octave4,0.08);
 
 %Localizing extrema with subpixel precision
 oct1extSp = subpixel(oct1ext,octave1,0.5,10);
@@ -44,7 +44,10 @@ oct3extSp = subpixel(oct3ext,octave3,0.5,10);
 oct4extSp = subpixel(oct4ext,octave4,0.5,10);
 
 %Calculating orientation
-%frames1 = orientation(oct1ext, octave1, 1, 1.6);
+oct1extOrient = orientation(oct1extSp, octave1, 1.6);
+oct2extOrient = orientation(oct2extSp, octave2, 1.6);
+oct3extOrient = orientation(oct3extSp, octave3, 1.6);
+oct4extOrient = orientation(oct4extSp, octave4, 1.6);
 
 % TODO Create unique interest point descriptor
 
@@ -52,13 +55,12 @@ oct4extSp = subpixel(oct4ext,octave4,0.5,10);
 
 % NOTE: This step is only necessary for plotting the found interest points
 % on the correct position of the image
-oct1InteresPoints = calculateRelativePixelPosition(oct1ext, 1);
-oct2InteresPoints = calculateRelativePixelPosition(oct2ext, 2);
-oct3InteresPoints = calculateRelativePixelPosition(oct3ext, 3);
-oct4InteresPoints = calculateRelativePixelPosition(oct4ext, 4);
+oct1InteresPoints = calculateRelativePixelPosition(oct1extSp, 1);
+oct2InteresPoints = calculateRelativePixelPosition(oct2extSp, 2);
+oct3InteresPoints = calculateRelativePixelPosition(oct3extSp, 3);
+oct4InteresPoints = calculateRelativePixelPosition(oct4extSp, 4);
 
-%Calculating orientation
-%frames1 = orientation(oct1ext, octave1, 1, 1.6);
+
 
 
 % plot found interest points on image, different colors indicate IP's found 

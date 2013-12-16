@@ -54,8 +54,15 @@ stats = regionprops(med_result, 'centroid');
 % apply binary mask to greylevel image 
 masked_image = uint8(grayImage) .* uint8(med_result);
 
+% convert image from int to double
+masked_image = double(masked_image);
+
+% normalize image
+masked_image = masked_image / max( masked_image(:));
+
 % assign center point to return value
 center = [stats.Centroid(1) stats.Centroid(2)];
+center = floor(center);
 
 end
 

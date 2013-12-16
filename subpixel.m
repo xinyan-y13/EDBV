@@ -12,8 +12,7 @@ result = [];
 iter = 1;
 
 
-
-for l=1:1:l
+for l=1:l
     
     % get coordinates of one point
     cor = extrema(:,l);
@@ -95,23 +94,19 @@ for l=1:1:l
         
         if (p(1) >  0.5 && x < L-2 )
                 dx=1;
-        %else
-        %    if (p(1) < -0.5 && x > 1)
-        %        dx=-1;
-        %    end
+        elseif (p(1) < -0.5 && x > 1)
+                dx=-1;
         end
         
         
         if (p(2) >  0.5 && y < L-2 )
                 dy=1;
-        %else
-        %    if (p(2) < -0.5 && y > 1)
-        %        dy=-1;
-        %    end
+        elseif (p(2) < -0.5 && y > 1)
+                dy=-1;
         end
         
         if( dx == 0 && dy == 0 ) 
-            break ; 
+            break; 
         end
     end
     
@@ -152,14 +147,14 @@ for l=1:1:l
     
     
     % in this case, the coordinates of the point can be saved
-    if (tr*tr/det) <= th ...
-            && (tr*tr/det) >= 0 ...
-            && rx >= 0 ...
-            && rx <= L-1 ...
-            && ry >= 0 ...
-            && ry <= B-1 ...
-            && ro >= 0 ...
-            && ro <= D-1
+    if (tr/det) <= th ...
+        && (tr/det) >= 0 ...
+        && rx >= 0 ...
+        && rx <= L-1 ...
+        && ry >= 0 ...
+        && ry <= B-1 ...
+        && ro >= 0 ...
+        && ro <= D-1
         
         
         result(1,iter) = rx;

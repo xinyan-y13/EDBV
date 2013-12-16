@@ -1,4 +1,4 @@
-function final_keypoints = orientation(keypoints, octave, scale, sigma)
+function final_keypoints = orientation(keypoints, octave, starting_sigma)
 % ORIENTATION Computes the "dominant" orientation for each keypoint
 % 
 % INPUT PARAMS:
@@ -35,10 +35,8 @@ for sl = 1:s_num
     dx = imfilter(image, dx_filter);
     dy = imfilter(image, dy_filter);
     
-    dx = double(dx);
-    dy = double(dy);
-    
-    dx = max(dx, 1);
+    dx = abs(dx);
+    dy = abs(dy);
     
     magnitudes(:,:,sl) = sqrt( dx.^2 + dy.^2 );
     angles(:,:,sl)     = atan2( dy, dx );
@@ -49,17 +47,21 @@ keypoints_x_axis = keypoints(1,:);
 keypoints_y_axis = keypoints(2,:) ;
 keypoints_scale = keypoints(3,:);
 
+rounded_keypoints_x_axis = floor(keypoints_x_axis + 0.5);
+rounded_keypoints_y_axis = floor(keypoints_y_axis + 0.5);
+rounded_keypoints_scale = floor(keypoints_scale + 0.5);
+
 % amount of keypoints
 key_num = size(keypoints, 2);
 
 % iterate each keypoint and apply window
 for keypoint=1:key_num
     % keypoint coords
-    keypoint_x = keypoints_x_axis(keypoint);
-    keypoint_y = keypoints_y_axis(keypoint);
-    keypoint_s = keypoints_scale(keypoint);
+    keypoint_x = rounded_keypoints_x_axis(keypoint);
+    keypoint_y = rounded_keypoints_y_axis(keypoint);
+    keypoint_s = rounded_keypoints_scale(keypoint);
     
-    sigma_gauss_window = window_factor * scale;
+    sigma_gauss_window = window_factor * (starting_sigma * 1.414^(keypoint_s - 1));
     window_radius = floor(sigma_gauss_window);
     
     % iterate over all pixels in window
@@ -75,7 +77,7 @@ for keypoint=1:key_num
                
                % calculate the correct bin
                bin = round( BINS *  angles(ys, xs, keypoint_s)/(2*pi) + 0.5);
-
+             
                histogram(bin) = double(histogram(bin) + gaussian_falloff * magnitudes(ys, xs, keypoint_s));
             end
         end
@@ -95,7 +97,7 @@ for keypoint=1:key_num
         dominant_magnitude = double(histogram(theta_bin_peaks_indices(i)));
         
         % add keypoint with "dominant" orientation
-        final_keypoints = [final_keypoints, [keypoint_x; keypoint_y; keypoint_s; (dominant_angle * 180) / pi; dominant_magnitude]];        
+        final_keypoints = [final_keypoints, [keypoints_x_axis(keypoint); keypoints_y_axis(keypoint); keypoints_scale(keypoint); dominant_angle; dominant_magnitude]];        
     end  
  
     % reset histogram
