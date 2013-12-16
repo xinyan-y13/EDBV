@@ -38,8 +38,10 @@ end
 
 
 % TODO Create unique interest point descriptor
-
-
+descriptors = description(cell2mat(ocataveArray(1)),cell2mat(oriArray(1)));
+for i = 2:octaves
+    descriptors = cat(2,descriptors,description(cell2mat(ocataveArray(i)),cell2mat(oriArray(i))));
+end
 
 % NOTE: This step is only necessary for plotting the found interest points
 % on the correct position of the image
