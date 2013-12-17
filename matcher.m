@@ -1,4 +1,4 @@
-function matches = matcher(desc1, ips1, desc2, ips2)
+function [matches1 matches2] = matcher(desc1, ips1, desc2, ips2)
 %--------------------------------------------------------------%
 %---------------------- DoG Pyramid for SIFT-------------------%
 
@@ -20,12 +20,12 @@ function matches = matcher(desc1, ips1, desc2, ips2)
 %
 % AUTHOR Balint Kovacs (1227520)
 %--------------------------------------------------------------%
-ratio = 0.8
+ratio = 0.6
 
-desc2 = desc2';
-matches = zeros(1,size(desc1,2));
-for i = 1:size(des1,2)
-   dot = desc1(:,i) * des2t;
+desc1 = desc1';
+matches = zeros(1,size(desc2,1));
+for i = 1:size(desc1,1)
+   dot = desc1(i,:) * desc2;
    [values,index] = sort(acos(dot));
    
    if (values(1) < ratio * values(2))
@@ -34,11 +34,19 @@ for i = 1:size(des1,2)
       indicies(i) = 0;
    end
 end
+dlmwrite('matches.txt',indicies);
 
-for i=1:size(matches)
-    matches(1,i) = ips1(1,i);
-    matches(2,i) = ips1(2,i);
-    matches(3,i) = ips2(1,i);
-    matches(4,i) = ips2(2,i);
+idx1 = find(indicies);
+idx2 = indicies(idx1);
+x1 = ips1(1,idx1);
+x2 = ips2(1,idx2);
+y1 = ips1(2,idx1);
+y2 = ips2(2,idx2);
+
+matches1(1,:) = x1;
+matches1(2,:) = y1;
+matches2(1,:) = x2;
+matches2(2,:) = y2;
+
 end
 
