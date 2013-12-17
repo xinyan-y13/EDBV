@@ -20,9 +20,9 @@ magnitudes = keys(5,:);
 % for every key point
 for p = 1: size(keys, 2)
     descriptor = zeros(4, 4, 8);
-    s = sc(p);
-    xp= a(p);
-    yp= b(p);
+    s = floor(sc(p));
+    xp= floor(a(p));
+    yp= floor(b(p));
     mag = magnitudes(p);
     orien = keys(4,p);
     sinus = sin(orien) ;
