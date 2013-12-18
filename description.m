@@ -1,4 +1,4 @@
-function [result] = description(octave,keys)
+function [result] = description(octave,keys, starting_sigma)
 
 [H, W, S] = size(octave); % H is the height of image, W is the width of image; num_level is the number of scale level of the octave
 result = [];
@@ -30,7 +30,7 @@ for p = 1: size(keys, 2)
     sinus = sin(orien) ;
     cosinus = cos(orien) ;
     
-    width = 3 * (2 * 2^(double (s / 3)) );
+    width = 3 * starting_sigma * 2^(double (s / 3));
     radius = floor( sqrt(2) * width * 5 * 0.5); % radius uses(d+1) to include more sample points
     for i = max(-radius, 1-xp): min(radius, W-xp)
         for j = max(-radius, 1-yp) : min(radius, H-yp)

@@ -44,9 +44,9 @@ end
 
 
 % TODO Create unique interest point descriptor
-descriptors = description(cell2mat(ocataveArray(1)),cell2mat(oriArray(1)));
+descriptors = description(cell2mat(ocataveArray(1)),cell2mat(oriArray(1)), 1.6);
 for i = 2:octaves
-    descriptors = cat(2,descriptors,description(cell2mat(ocataveArray(i)),cell2mat(oriArray(i))));
+    descriptors = cat(2,descriptors,description(cell2mat(ocataveArray(i)),cell2mat(oriArray(i)), 1.6));
 end
 
 
