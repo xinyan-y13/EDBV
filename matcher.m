@@ -20,7 +20,7 @@ function [matches1 matches2] = matcher(desc1, ips1, desc2, ips2)
 %
 % AUTHOR Balint Kovacs (1227520)
 %--------------------------------------------------------------%
-ratio = 0.6
+ratio = 0.7
 
 desc1 = desc1';
 matches = zeros(1,size(desc2,1));

@@ -1,9 +1,14 @@
-desc1 = dlmread('katze1desc.txt');
-desc2 = dlmread('katze2desc.txt');
-ips1 = dlmread('katze1ips.txt');
-ips2 = dlmread('katze2ips.txt');
-img1 = imread('./test/katze1.jpg');
-img2 = imread('./test/katze2.jpg');
+clear
+origin1 = [490 649 0];
+origin2 = [517 589 0];
+origin2min = [417 489 0];
+origin2max = [617 689 0];
+desc1 = dlmread('testE2desc.txt');
+desc2 = dlmread('testE4desc.txt');
+ips1 = dlmread('testE2ips.txt');
+ips2 = dlmread('testE4ips.txt');
+img1 = imread('./test/testE2.png');
+img2 = imread('./test/testE4.png');
 
 [matches1,matches2] = matcher(desc1, ips1, desc2, ips2);
 
@@ -28,3 +33,20 @@ for i=1:size(matches1,2)
     %line([matches1(1,i),matches(2,i)], ...
     %    [matches2(1,i)+offset,matches(2,i)], 'Color', 'y');
 end
+
+
+matches1 = matches1';
+matches2 = matches2';
+
+[tform,inlierPtsDistorted,inlierPtsOriginal] = ...
+    estimateGeometricTransform(matches2,matches1,'Affine');
+alvar = imread('./test/ALVAR-0.png');
+outputView = imref2d(size(img1));
+img3 = imwarp(alvar, tform);
+
+figure
+imshow(img2)
+hold on;
+imshow(img3)
+%drawCube(origin1, 200)
+%drawCube(origin2, 200)

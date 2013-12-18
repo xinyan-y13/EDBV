@@ -1,8 +1,8 @@
 
 % Masking image to remove unnecessary 
-[maskedI center] = detectCard('./test/katze1.jpg');
+[maskedI center] = detectCard('./test/testE4.png');
 
-%maskedI = double(rgb2gray(imread('./test/gc.jpg')));
+%maskedI = double(rgb2gray(imread('./test/markGC.jpg')));
 % Creating Difference-of-Gaussian array
 octaves = 4;
 intervals = 5;
@@ -35,6 +35,10 @@ ips = zeros(5,0);
 for i = 1:octaves
    ori = orientation(cell2mat(extArray(i)), cell2mat(ocataveArray(i)), 1.6);
    oriArray(1,i) = {ori};
+   
+   %IP locations calculated back to original coordinates
+   ori (1,:) = ori(1,:)*2^(i-1);
+   ori (2,:) = ori(2,:)*2^(i-1);
    ips = cat(2,ips,ori);
 end
 
@@ -45,14 +49,21 @@ for i = 2:octaves
     descriptors = cat(2,descriptors,description(cell2mat(ocataveArray(i)),cell2mat(oriArray(i))));
 end
 
-% NOTE: This step is only necessary for plotting the found interest points
-% on the correct position of the image
+
+
+%NOTE: This step is only necessary for plotting the found interest points
+%on the correct position of the image
 relIP = cell(1,octaves);
+relips = zeros(2,0);
 for i=1:octaves
-    relIP(1,i) = {calculateRelativePixelPosition(cell2mat(extArray(i)), i)};
+    relIP = calculateRelativePixelPosition(cell2mat(extArray(i)), i);
+    relIPArray(1,i) = {relIP};
+    relips = cat(2,relips,relIP);
 end
 
 
+dlmwrite('testE4desc.txt',descriptors);
+dlmwrite('testE4ips.txt',ips);
 
 
 % plot found interest points on image, different colors indicate IP's found 
@@ -64,16 +75,16 @@ end
 figure
 imshow(maskedI)
 hold on;
-oct1InteresPoints = cell2mat(relIP(1));
+oct1InteresPoints = cell2mat(relIPArray(1));
 plot(oct1InteresPoints(1,:),oct1InteresPoints(2,:),'b.','MarkerSize',10) 
 hold on;
-oct2InteresPoints = cell2mat(relIP(2));
+oct2InteresPoints = cell2mat(relIPArray(2));
 plot(oct2InteresPoints(1,:),oct2InteresPoints(2,:),'r.','MarkerSize',10) 
 hold on;
-oct3InteresPoints = cell2mat(relIP(3));
+oct3InteresPoints = cell2mat(relIPArray(3));
 plot(oct3InteresPoints(1,:),oct3InteresPoints(2,:),'g.','MarkerSize',10) 
 hold on;
-oct4InteresPoints = cell2mat(relIP(4));
+oct4InteresPoints = cell2mat(relIPArray(4));
 plot(oct4InteresPoints(1,:),oct4InteresPoints(2,:),'y.','MarkerSize',10) 
 %hold on;
 %quiver( frames1(1,:), frames1(2,:), frames1(4,:), frames1(5,:));
