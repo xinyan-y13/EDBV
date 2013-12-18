@@ -3,18 +3,21 @@ function [result] = description(octave,keys)
 [H, W, S] = size(octave); % H is the height of image, W is the width of image; num_level is the number of scale level of the octave
 result = [];
 angles = zeros(H, W, S);
+magnitudes = zeros(H, W, S);
+
 for s = 1: 1:S
     img = octave(:,:,s);
-    filter = imfilter(img, [-0.5 0 0.5]);
-    angles(:,:,s) = mod(atan(double(filter) ./ double(eps + filter)) + 2*pi, 2*pi);
+    dx = imfilter(img, [-0.5 0 0.5]);
+    dy = imfilter(img, [-0.5; 0; 0.5]);
+    
+    magnitudes(:,:,s) = sqrt( dx.^2 + dy.^2 );
+    angles(:,:,s) = atan2( dy, dx );  
 end
 
 
 a = keys(1,:);
 b = keys(2,:);
 sc = keys(3,:);
-magnitudes = keys(5,:);
-
 
 
 % for every key point
@@ -23,7 +26,6 @@ for p = 1: size(keys, 2)
     s = floor(sc(p));
     xp= floor(a(p));
     yp= floor(b(p));
-    mag = magnitudes(p);
     orien = keys(4,p);
     sinus = sin(orien) ;
     cosinus = cos(orien) ;
@@ -32,6 +34,7 @@ for p = 1: size(keys, 2)
     radius = floor( sqrt(2) * width * 5 * 0.5); % radius uses(d+1) to include more sample points
     for i = max(-radius, 1-xp): min(radius, W-xp)
         for j = max(-radius, 1-yp) : min(radius, H-yp)
+            mag_current = magnitudes(yp+j, xp+i, s);
             ang = angles(yp+j, xp+i, s) ;
             ang = mod(orien-ang, 2*pi);
             
@@ -60,7 +63,7 @@ for p = 1: size(keys, 2)
                             % w = m(a+x, b+y)*exp* dr^k*(1-dr)^(1-k) * dc^m*(1-dc)^(1-m) * do^n*(1-do)^(1-n),
                             % a,b: coordinates of the keypoint within the gauss octave
                             % k,m,n: either 1 or 0
-                            weight = mag * gaus_exp * abs(1 - rotate_x - rbinx)* abs(1 - rotate_y - rbiny)* abs(1 - rotate_s - rbins) ;
+                            weight = mag_current * gaus_exp * abs(1 - rotate_x - rbinx)* abs(1 - rotate_y - rbiny)* abs(1 - rotate_s - rbins) ;
                             descriptor(binx+rotate_x + 3, biny+rotate_y + 3, mod((bins+rotate_s),8)+1) = descriptor(binx+rotate_x + 3, biny+rotate_y + 3, mod((bins+rotate_s),8)+1 ) +  weight ;
                         end
                     end
